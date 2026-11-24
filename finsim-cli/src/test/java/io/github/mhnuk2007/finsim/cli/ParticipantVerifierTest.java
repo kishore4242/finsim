@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ParticipantVerifierTest {
   private HttpServer server;
@@ -208,5 +210,29 @@ class ParticipantVerifierTest {
     assertThat(result.passed()).isFalse();
     assertThat(result.phases().get(0).details())
         .anySatisfy(s -> assertThat(s.toLowerCase()).contains("timed out"));
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "http://localhost:8080/bank-a",
+        "http://localhost:8080/sample-bank",
+        "http://localhost:8080/bank/a/",
+        "http://localhost:8080/api/v1/bank"
+      })
+  void shouldAcceptValidParticipantUrls(String url) {
+    assertThat(ParticipantVerifier.validUrl(url)).isTrue();
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "http://localhost:8080/./",
+        "http://localhost:8080/../admin",
+        "http://localhost:8080?query=1",
+        "http://localhost:8080#fragment"
+      })
+  void shouldRejectInvalidParticipantUrls(String url) {
+    assertThat(ParticipantVerifier.validUrl(url)).isFalse();
   }
 }

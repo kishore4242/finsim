@@ -48,10 +48,20 @@ final class ParticipantVerifier {
           && uri.getUserInfo() == null
           && uri.getQuery() == null
           && uri.getFragment() == null
-          && (uri.getPath() == null || uri.getPath().isEmpty() || uri.getPath().equals("/"));
+          && isValidPath(uri.getPath());
     } catch (IllegalArgumentException e) {
       return false;
     }
+  }
+
+  private static boolean isValidPath(String path) {
+    if (path == null || path.isEmpty()) return true;
+    for (String segment : path.split("/")) {
+      if (segment.equals(".") || segment.equals("..")) {
+        return false;
+      }
+    }
+    return true;
   }
 
   Result run() {
